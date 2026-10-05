@@ -3,13 +3,13 @@
 //bool compareApprox(const float&a, const float& b);
 
 
-static void unitTest_Vec3_defaultConstructor()
+static void unitTestVec3DefaultConstructor()
 {
 	Vec3 default_vec;
 	assert(default_vec.x == 0.0f && default_vec.y == 0.0f && default_vec.z == 0.0f);
 }
 
-static void unitTest_Vec3_paramConstructor()
+static void unitTestVec3ParamConstructor()
 {
 	Vec3 param_vec(1, 0, 1);
 	assert(param_vec.x == 1.0f && param_vec.y == 0.0f && param_vec.z == 1.0f);
@@ -18,14 +18,14 @@ static void unitTest_Vec3_paramConstructor()
 	assert(param_vec2.x == param && param_vec2.y == param && param_vec2.z == param);
 }
 
-static void unitTest_Vec3_copyConstructor()
+static void unitTestVec3CopyConstructor()
 {
 	Vec3 param_vec(1, 0, 1);
 	Vec3 param2_vec(param_vec);
 	assert(param2_vec.x == 1.0f && param2_vec.y == 0.0f && param2_vec.z == 1.0f);
 }
 
-static void unitTest_Vec3_math()
+static void unitTestVec3Math()
 {
 	Vec3 v1 = { 1.0f };
 	Vec3 v2 = { 2.0f };
@@ -88,7 +88,7 @@ static void unitTest_Vec3_math()
 	assert(math_utils::cross3d(xAxis, xAxis) == origin);
 }
 
-static void unitTest_Vec3_increment_vec()
+static void unitTestVec3IncrementVec()
 {
 	Vec3 a = Vec3(1.0f, 0.0f, 0.0f);
 	Vec3 b = Vec3(0.0f, 1.0f, 1.0f);
@@ -98,7 +98,7 @@ static void unitTest_Vec3_increment_vec()
 	assert(a.z = 1.0f);
 }
 
-static void unitTest_Vec3_decrement_vec()
+static void unitTestVec3DecrementVec()
 {
 	Vec3 a = Vec3(1.0f, 0.0f, 0.0f);
 	Vec3 b = Vec3(0.0f, 1.0f, 1.0f);
@@ -110,12 +110,12 @@ static void unitTest_Vec3_decrement_vec()
 
 
 
-void unitTest_Vec3()
+void unitTestVec3()
 {
-	unitTest_Vec3_defaultConstructor();
-	unitTest_Vec3_paramConstructor();
-	unitTest_Vec3_copyConstructor();
-	unitTest_Vec3_math();
-	unitTest_Vec3_increment_vec();
-	unitTest_Vec3_decrement_vec();
+	unitTestVec3DefaultConstructor();
+	unitTestVec3ParamConstructor();
+	unitTestVec3CopyConstructor();
+	unitTestVec3Math();
+	unitTestVec3IncrementVec();
+	unitTestVec3DecrementVec();
 }

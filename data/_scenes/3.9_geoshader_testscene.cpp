@@ -2,7 +2,7 @@
 // ----------------------------------------------------------------------------
 // ----- libraries
 // ----------------------------------------------------------------------------
-#include "../../headers/data/scenes.h"
+#include "../../source/headers/data/scene_data.h"
 #include "../../headers/utils/utilities.h"
 #include <cmath>
 #include <ctime>
@@ -23,7 +23,7 @@ void GeoShaderTestScene::loadData()
 	scene_state.vertex_divider = 9.0f;
 	//scene_state.b_model_refraction = true;
 	scene_state.display_skybox = true;
-	scene_state.model_shader_name = "explode";
+	scene_state.model_shader_id = ShaderID::Explode;
 	scene_state.display_normals = true;
 	scene_state.display_axes = true;
 
@@ -125,14 +125,14 @@ void GeoShaderTestScene::update() {
 	// move lights radial
 	// --------------------------------------------------------------------------------------
 	float distance_multiplier = 3.0f;
-	const float pi = 3.141592f;
+	const float PI = 3.141592f;
 	for (int ii = 0; ii < point_lights.size(); ii++)
 	{
 		// change light position
 		point_lights[ii].position = Vec3(
-			distance_multiplier * cos(scene_state.time + 2 * pi / point_lights.size() * ii),
+			distance_multiplier * cos(scene_state.time + 2 * PI / point_lights.size() * ii),
 			3.0f,
-			distance_multiplier * sin(scene_state.time + 2 * pi / point_lights.size() * ii))
+			distance_multiplier * sin(scene_state.time + 2 * PI / point_lights.size() * ii))
 			;
 
 		// change light color

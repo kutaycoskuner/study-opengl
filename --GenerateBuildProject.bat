@@ -67,7 +67,7 @@ echo.
 echo Generating solution files...
 
 cd "!SOLUTION_DIRECTORY!"
-cmake ..
+cmake -G "Visual Studio 17 2022" -A x64 ..
 if !errorlevel! NEQ 0 (
     echo [!PROJECT_NAME!] Error with CMake. No solution files generated.
     cd ..

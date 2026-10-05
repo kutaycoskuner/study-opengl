@@ -10,6 +10,16 @@ artifacts/
 bin/
 build/
 _documentation/prompts/
+_temp/
+scripts/_input/
+scripts/_output/
+
+_documentation
+_documentation/
+
+.agents/
+.claude/
+
 
 # ----------------------------------------------------------------------------------------
 #               base

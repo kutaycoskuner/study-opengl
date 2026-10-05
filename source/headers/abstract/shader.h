@@ -1,0 +1,258 @@
+#pragma once
+// ------------------------------------------------------------------------------------------------
+//                  libraries
+// ------------------------------------------------------------------------------------------------
+#include "../abstract/matrix4.h"
+#include "../abstract/vector2.h"
+
+#include "../data/shader_data.h"
+
+
+#include <glad/glad.h>
+
+#include <vector>
+
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <iostream>
+#include <optional>
+
+// ------------------------------------------------------------------------------------------------
+//                  function declerations
+// ------------------------------------------------------------------------------------------------
+
+
+// ------------------------------------------------------------------------------------------------
+//                  abstract
+// ------------------------------------------------------------------------------------------------
+struct ShaderCompileDesc
+{
+    // Variables
+    // -----------------------------------
+    std::optional<ShaderID> shader_id;
+    std::string vrtx_path;
+    std::string frag_path;
+    std::string geom_path;
+
+    // Constructors
+    // -----------------------------------    
+    // Default constructor
+    ShaderCompileDesc() : shader_id(std::nullopt), vrtx_path(""), frag_path(""), geom_path("") {}
+
+    // Parameterized constructor
+    ShaderCompileDesc(const ShaderID& name, const std::string& vrtx_path, const std::string& frag_path, const std::string& geom_path)
+        : shader_id(name), vrtx_path(vrtx_path), frag_path(frag_path), geom_path(geom_path)
+    {
+    }
+
+    // Copy constructor
+    ShaderCompileDesc(const ShaderCompileDesc& other)
+        : shader_id(other.shader_id), vrtx_path(other.vrtx_path), frag_path(other.frag_path), geom_path(other.geom_path)
+    {
+    }
+
+    // Move constructor
+    ShaderCompileDesc(ShaderCompileDesc&& other) noexcept
+        : shader_id(std::move(other.shader_id)),
+          vrtx_path(std::move(other.vrtx_path)),
+          frag_path(std::move(other.frag_path)),
+        geom_path(std::move(other.geom_path)) {}
+
+    // Destructor (default is sufficient)
+    ~ShaderCompileDesc() = default;
+};
+
+// this shader class is suggested in learnopengl
+class Shader
+{
+public:
+    unsigned int id;
+    // constructor generates the shader on the fly
+    // ------------------------------------------------------------------------
+        // Constructor generates the shader from ShaderCompileDesc
+    // ------------------------------------------------------------------------
+// Constructor that generates the shader program
+    Shader(const ShaderCompileDesc& shader_compile_desc)
+    {
+        // 1. Retrieve the vertex/fragment source code from filePath
+        std::string vrtx_code;
+        std::string frag_code;
+        std::string geom_code;
+
+        std::ifstream v_shader_file;
+        std::ifstream f_shader_file;
+        std::ifstream g_shader_file;
+
+        // Ensure ifstream objects can throw exceptions:
+        v_shader_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+        f_shader_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+        g_shader_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+        try {
+            // Open files
+            v_shader_file.open(shader_compile_desc.vrtx_path);
+            f_shader_file.open(shader_compile_desc.frag_path);
+
+            std::stringstream vShaderStream, fShaderStream;
+            // Read file's buffer contents into streams
+            vShaderStream << v_shader_file.rdbuf();
+            fShaderStream << f_shader_file.rdbuf();
+            // Close file handlers
+            v_shader_file.close();
+            f_shader_file.close();
+            // Convert streams into strings
+            vrtx_code = vShaderStream.str();
+            frag_code = fShaderStream.str();
+
+            // If a geometry shader is provided, load it
+            if (!shader_compile_desc.geom_path.empty()) {
+                g_shader_file.open(shader_compile_desc.geom_path);
+                std::stringstream g_shader_stream;
+                g_shader_stream << g_shader_file.rdbuf();
+                g_shader_file.close();
+                geom_code = g_shader_stream.str();
+            }
+        }
+        catch (const std::ifstream::failure& e) {
+            std::cerr << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ\n"
+                << "File: " << __FILE__ << "\n"
+                << "Line: " << __LINE__ << "\n"
+                << "Exception Message: " << e.what() << "\n"
+                << "Shader File Path: " << (shader_compile_desc.geom_path.empty() ?
+                    (shader_compile_desc.vrtx_path) : shader_compile_desc.geom_path) << "\n"
+                << std::endl;
+        }
+
+        // Compile shaders
+        unsigned int vertex, fragment, geometry = 0;
+        const char* PTR_V_SHADER_CODE = vrtx_code.c_str();
+        const char* PTR_F_SHADER_CODE = frag_code.c_str();
+        const char* PTR_G_SHADER_CODE = geom_code.c_str();
+
+        // Vertex shader
+        vertex = glCreateShader(GL_VERTEX_SHADER);
+        glShaderSource(vertex, 1, &PTR_V_SHADER_CODE, NULL);
+        glCompileShader(vertex);
+        checkCompileErrors(shader_compile_desc, vertex, "VERTEX");
+
+        // Fragment shader
+        fragment = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(fragment, 1, &PTR_F_SHADER_CODE, NULL);
+        glCompileShader(fragment);
+        checkCompileErrors(shader_compile_desc, fragment, "FRAGMENT");
+
+        // If a geometry shader is provided, compile it
+        if (!shader_compile_desc.geom_path.empty()) {
+            geometry = glCreateShader(GL_GEOMETRY_SHADER);
+            glShaderSource(geometry, 1, &PTR_G_SHADER_CODE, NULL);
+            glCompileShader(geometry);
+            checkCompileErrors(shader_compile_desc, geometry, "GEOMETRY");
+        }
+
+        // Create the shader program
+        id = glCreateProgram();
+        glAttachShader(id, vertex);
+        glAttachShader(id, fragment);
+        if (!shader_compile_desc.geom_path.empty()) {
+            glAttachShader(id, geometry);
+        }
+
+        glLinkProgram(id);
+        checkCompileErrors(shader_compile_desc, id, "PROGRAM");
+
+        // Delete shaders after they are linked
+        glDeleteShader(vertex);
+        glDeleteShader(fragment);
+        if (geometry != 0)
+        {  // Only delete if it was created
+            glDeleteShader(geometry);
+        }
+    }
+    // activate the shader
+    // ------------------------------------------------------------------------
+    void use() 
+    { 
+        glUseProgram(id); 
+    }
+    // utility uniform functions
+    // ------------------------------------------------------------------------
+    void setBool(const std::string &name, bool value) const
+    {         
+        glUniform1i(glGetUniformLocation(id, name.c_str()), (int)value); 
+    }
+    // ------------------------------------------------------------------------
+    void setInt(const std::string &name, int value) const
+    { 
+        glUniform1i(glGetUniformLocation(id, name.c_str()), value); 
+    }
+    // ------------------------------------------------------------------------
+    void setFloat(const std::string &name, float value) const
+    { 
+        glUniform1f(glGetUniformLocation(id, name.c_str()), value); 
+    }
+    // ------------------------------------------------------------------------
+    void setMat4(const std::string& name, const Mat4& value) const
+    {
+        GLuint loc = glGetUniformLocation(id, name.c_str());
+        glUniformMatrix4fv(loc, 1, GL_TRUE, &value.m[0][0]);
+    }
+    // ------------------------------------------------------------------------
+    void setVec2(const std::string& name, const Vec2& value) const
+    {
+        glUniform2f(glGetUniformLocation(id, name.c_str()), value.x, value.y);
+    }
+    // ------------------------------------------------------------------------
+    void setVec2(const std::string& name, const float& vx, const float& vy) const
+    {
+        glUniform2f(glGetUniformLocation(id, name.c_str()), vx, vy);
+    }
+    // ------------------------------------------------------------------------
+    void setVec3(const std::string& name, const Vec3& value) const
+    {
+        glUniform3f(glGetUniformLocation(id, name.c_str()), value.x, value.y, value.z);
+    }
+    // ------------------------------------------------------------------------
+    void setVec3(const std::string& name, const float& vx, const float& vy, const float& vz) const
+    {
+        glUniform3f(glGetUniformLocation(id, name.c_str()), vx, vy, vz);
+    }
+
+private:
+    // utility function for checking shader compilation/linking errors.
+    // ------------------------------------------------------------------------
+    void checkCompileErrors(const ShaderCompileDesc& scd, unsigned int shader, const std::string& type)
+    {
+        int success;
+        char infoLog[1024];
+
+        // Check the type of error (shader or program)
+        if (type != "PROGRAM") {
+            // Shader compilation errors
+            glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+            if (!success) {
+                glGetShaderInfoLog(shader, 1024, NULL, infoLog);
+                std::cerr << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n"
+                    << "File Path: " << scd.vrtx_path << " (Vertex Shader)\n"
+                    << "Error Message: " << infoLog << "\n"
+                    << "-- --------------------------------------------------- --\n";
+            }
+        }
+        else {
+            // Program linking errors
+            glGetProgramiv(shader, GL_LINK_STATUS, &success);
+            if (!success) {
+                glGetProgramInfoLog(shader, 1024, NULL, infoLog);
+                std::cerr << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n"
+                    << "File Paths : \n"
+                    << "  Vertex Shader   : " << scd.vrtx_path << "\n"
+                    << "  Fragment Shader : " << scd.frag_path << "\n";
+                if (!scd.geom_path.empty()) {
+                    std::cerr << "Geometry Shader: " << scd.geom_path << "\n";
+                }
+                std::cerr << "Error Message: " << infoLog << "\n"
+                    << "-- --------------------------------------------------- --\n";
+            }
+        }
+    }
+};

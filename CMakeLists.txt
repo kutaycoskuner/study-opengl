@@ -88,7 +88,7 @@ set(blackboardCode
 )
 
 set(coreCode
-    "${sourceDir}/core/application.cpp"
+    "${sourceDir}/core/renderer.cpp"
     "${sourceDir}/core/ui.cpp"
 )
 
@@ -179,105 +179,105 @@ set(dataScenes
 )
 
 set(shaderFiles
-    "${shader_dir_full}/post_process/gaussian-blur_vrtx_shader.glsl"
-    "${shader_dir_full}/post_process/gaussian-blur_frag_shader.glsl"
-    "${shader_dir_full}/1.0.3d_frag_shader.glsl"
-    "${shader_dir_full}/1.0.3d_vrtx_shader.glsl"
-    "${shader_dir_full}/1.1.axis-x_frag_shader.glsl"
-    "${shader_dir_full}/1.1.axis-x_vrtx_shader.glsl"
-    "${shader_dir_full}/1.1.axis-z_frag_shader.glsl"
-    "${shader_dir_full}/1.1.axis-z_vrtx_shader.glsl"
-    "${shader_dir_full}/1.2.diffuse_frag_shader.glsl"
-    "${shader_dir_full}/1.2.diffuse_vrtx_shader.glsl"
-    "${shader_dir_full}/1.3.green_frag_shader.glsl"
-    "${shader_dir_full}/1.3.green_vrtx_shader.glsl"
-    "${shader_dir_full}/1.4.pink_frag_shader.glsl"
-    "${shader_dir_full}/1.4.pink_vrtx_shader.glsl"
-    "${shader_dir_full}/2.0.phong_lit_frag_shader.glsl"
-    "${shader_dir_full}/2.0.phong_lit_vrtx_shader.glsl"
-    "${shader_dir_full}/2.1.lightmap_lit_frag_shader.glsl"
-    "${shader_dir_full}/2.1.lightmap_lit_vrtx_shader.glsl"
-    "${shader_dir_full}/2.2.lightcaster-directional_lit_frag_shader.glsl"
-    "${shader_dir_full}/2.2.lightcaster-directional_lit_vrtx_shader.glsl"
-    "${shader_dir_full}/2.2.lightcaster-point_lit_frag_shader.glsl"
-    "${shader_dir_full}/2.2.lightcaster-point_lit_vrtx_shader.glsl"
-    "${shader_dir_full}/2.2.lightcaster-spot_lit_frag_shader.glsl"
-    "${shader_dir_full}/2.2.lightcaster-spot_lit_vrtx_shader.glsl"
-    "${shader_dir_full}/2.3.multiplelights_lit_frag_shader.glsl"
-    "${shader_dir_full}/2.3.multiplelights_lit_vrtx_shader.glsl"
-    "${shader_dir_full}/3.0.depthtesting_lit_frag_shader.glsl"
-    "${shader_dir_full}/3.0.depthtesting_lit_vrtx_shader.glsl"
-    "${shader_dir_full}/3.1.stenciltesting02_frag_shader.glsl"
-    "${shader_dir_full}/3.1.stenciltesting02_vrtx_shader.glsl"
-    "${shader_dir_full}/3.1.stenciltesting_frag_shader.glsl"
-    "${shader_dir_full}/3.1.stenciltesting_vrtx_shader.glsl"
-    "${shader_dir_full}/3.10.instance02_frag_shader.glsl"
-    "${shader_dir_full}/3.10.instance02_vrtx_shader.glsl"
-    "${shader_dir_full}/3.10.instance_frag_shader.glsl"
-    "${shader_dir_full}/3.10.instance_vrtx_shader.glsl"
-    "${shader_dir_full}/3.2.blending_frag_shader.glsl"
-    "${shader_dir_full}/3.2.blending_vrtx_shader.glsl"
-    "${shader_dir_full}/3.4.framebuffer_frag_shader.glsl"
-    "${shader_dir_full}/3.4.framebuffer_vrtx_shader.glsl"
-    "${shader_dir_full}/3.5.cubemap_frag_shader.glsl"
-    "${shader_dir_full}/3.5.cubemap_vrtx_shader.glsl"
-    "${shader_dir_full}/3.6.cubemaplit_frag_shader.glsl"
-    "${shader_dir_full}/3.6.cubemaplit_vrtx_shader.glsl"
-    "${shader_dir_full}/3.8.advglsl-blue_frag_shader.glsl"
-    "${shader_dir_full}/3.8.advglsl-blue_vrtx_shader.glsl"
-    "${shader_dir_full}/3.8.advglsl-green_frag_shader.glsl"
-    "${shader_dir_full}/3.8.advglsl-green_vrtx_shader.glsl"
-    "${shader_dir_full}/3.8.advglsl-red_frag_shader.glsl"
-    "${shader_dir_full}/3.8.advglsl-red_vrtx_shader.glsl"
-    "${shader_dir_full}/3.8.advglsl-yellow_frag_shader.glsl"
-    "${shader_dir_full}/3.8.advglsl-yellow_vrtx_shader.glsl"
-    "${shader_dir_full}/3.9.axes_frag_shader.glsl"
-    "${shader_dir_full}/3.9.axes_geo_shader.glsl"
-    "${shader_dir_full}/3.9.axes_vrtx_shader.glsl"
-    "${shader_dir_full}/3.9.explode_frag_shader.glsl"
-    "${shader_dir_full}/3.9.explode_geo_shader.glsl"
-    "${shader_dir_full}/3.9.explode_vrtx_shader.glsl"
-    "${shader_dir_full}/3.9.geo_frag_shader.glsl"
-    "${shader_dir_full}/3.9.geo_geo_shader.glsl"
-    "${shader_dir_full}/3.9.geo_vrtx_shader.glsl"
-    "${shader_dir_full}/3.9.normal_frag_shader.glsl"
-    "${shader_dir_full}/3.9.normal_geo_shader.glsl"
-    "${shader_dir_full}/3.9.normal_vrtx_shader.glsl"
-    "${shader_dir_full}/4.1.blinnphong2_frag_shader.glsl"
-    "${shader_dir_full}/4.1.blinnphong2_vrtx_shader.glsl"
-    "${shader_dir_full}/4.1.blinnphong_frag_shader.glsl"
-    "${shader_dir_full}/4.1.blinnphong_vrtx_shader.glsl"
-    "${shader_dir_full}/4.2.gamma_frag_shader.glsl"
-    "${shader_dir_full}/4.2.gamma_vrtx_shader.glsl"
-    "${shader_dir_full}/4.3.light-shadow_frag_shader.glsl"
-    "${shader_dir_full}/4.3.light-shadow_vrtx_shader.glsl"
-    "${shader_dir_full}/4.3.shadowmap_frag_shader.glsl"
-    "${shader_dir_full}/4.3.shadowmap_vrtx_shader.glsl"
-    "${shader_dir_full}/4.4.plight-shadow_frag_shader.glsl"
-    "${shader_dir_full}/4.4.plight-shadow_vrtx_shader.glsl"
-    "${shader_dir_full}/4.4.shadowmap-pl_frag_shader.glsl"
-    "${shader_dir_full}/4.4.shadowmap-pl_geo_shader.glsl"
-    "${shader_dir_full}/4.4.shadowmap-pl_vrtx_shader.glsl"
-    "${shader_dir_full}/4.5.normal01_frag_shader.glsl"
-    "${shader_dir_full}/4.5.normal01_vrtx_shader.glsl"
-    "${shader_dir_full}/4.6.normal02_frag_shader.glsl"
-    "${shader_dir_full}/4.6.normal02_vrtx_shader.glsl"
-    "${shader_dir_full}/4.7.parallax_frag_shader.glsl"
-    "${shader_dir_full}/4.7.parallax_vrtx_shader.glsl"
-    "${shader_dir_full}/4.8.hdr_frag_shader.glsl"
-    "${shader_dir_full}/4.8.hdr_vrtx_shader.glsl"
-    "${shader_dir_full}/4.9.bloom_frag_shader.glsl"
-    "${shader_dir_full}/4.9.bloom_vrtx_shader.glsl"
-    "${shader_dir_full}/4.10.1.deferred-geometry_frag_shader.glsl"
-    "${shader_dir_full}/4.10.1.deferred-geometry_vrtx_shader.glsl"
-    "${shader_dir_full}/4.10.2.deferred-lighting_frag_shader.glsl"
-    "${shader_dir_full}/4.10.2.deferred-lighting_vrtx_shader.glsl"
-    "${shader_dir_full}/4.11.1.ssao-geometry_frag_shader.glsl"
-    "${shader_dir_full}/4.11.1.ssao-geometry_vrtx_shader.glsl"
-    "${shader_dir_full}/4.11.2.ssao-draw_frag_shader.glsl"
-    "${shader_dir_full}/4.11.2.ssao-draw_vrtx_shader.glsl"
-    "${shader_dir_full}/4.11.3.ssao-blur_frag_shader.glsl"
-    "${shader_dir_full}/4.11.4.ssao-lighting_frag_shader.glsl"
+    "${shader_dir_full}/post_process/gaussian_blur-vrtx.glsl"
+    "${shader_dir_full}/post_process/gaussian_blur-frag.glsl"
+    "${shader_dir_full}/1.0-3d-frag.glsl"
+    "${shader_dir_full}/1.0-3d-vrtx.glsl"
+    "${shader_dir_full}/1.1-axis_x-frag.glsl"
+    "${shader_dir_full}/1.1-axis_x-vrtx.glsl"
+    "${shader_dir_full}/1.1-axis_z-frag.glsl"
+    "${shader_dir_full}/1.1-axis_z-vrtx.glsl"
+    "${shader_dir_full}/1.2-diffuse-frag.glsl"
+    "${shader_dir_full}/1.2-diffuse-vrtx.glsl"
+    "${shader_dir_full}/1.3-green-frag.glsl"
+    "${shader_dir_full}/1.3-green-vrtx.glsl"
+    "${shader_dir_full}/1.4-pink-frag.glsl"
+    "${shader_dir_full}/1.4-pink-vrtx.glsl"
+    "${shader_dir_full}/2.0-phong_lit-frag.glsl"
+    "${shader_dir_full}/2.0-phong_lit-vrtx.glsl"
+    "${shader_dir_full}/2.1-lightmap_lit-frag.glsl"
+    "${shader_dir_full}/2.1-lightmap_lit-vrtx.glsl"
+    "${shader_dir_full}/2.2-lightcaster_directional_lit-frag.glsl"
+    "${shader_dir_full}/2.2-lightcaster_directional_lit-vrtx.glsl"
+    "${shader_dir_full}/2.2-lightcaster_point_lit-frag.glsl"
+    "${shader_dir_full}/2.2-lightcaster_point_lit-vrtx.glsl"
+    "${shader_dir_full}/2.2-lightcaster_spot_lit-frag.glsl"
+    "${shader_dir_full}/2.2-lightcaster_spot_lit-vrtx.glsl"
+    "${shader_dir_full}/2.3-multiplelights_lit-frag.glsl"
+    "${shader_dir_full}/2.3-multiplelights_lit-vrtx.glsl"
+    "${shader_dir_full}/3.0-depthtesting_lit-frag.glsl"
+    "${shader_dir_full}/3.0-depthtesting_lit-vrtx.glsl"
+    "${shader_dir_full}/3.1-stenciltesting02-frag.glsl"
+    "${shader_dir_full}/3.1-stenciltesting02-vrtx.glsl"
+    "${shader_dir_full}/3.1-stenciltesting-frag.glsl"
+    "${shader_dir_full}/3.1-stenciltesting-vrtx.glsl"
+    "${shader_dir_full}/3.10-instance02-frag.glsl"
+    "${shader_dir_full}/3.10-instance02-vrtx.glsl"
+    "${shader_dir_full}/3.10-instance-frag.glsl"
+    "${shader_dir_full}/3.10-instance-vrtx.glsl"
+    "${shader_dir_full}/3.2-blending-frag.glsl"
+    "${shader_dir_full}/3.2-blending-vrtx.glsl"
+    "${shader_dir_full}/3.4-framebuffer-frag.glsl"
+    "${shader_dir_full}/3.4-framebuffer-vrtx.glsl"
+    "${shader_dir_full}/3.5-cubemap-frag.glsl"
+    "${shader_dir_full}/3.5-cubemap-vrtx.glsl"
+    "${shader_dir_full}/3.6-cubemaplit-frag.glsl"
+    "${shader_dir_full}/3.6-cubemaplit-vrtx.glsl"
+    "${shader_dir_full}/3.8-advglsl_blue-frag.glsl"
+    "${shader_dir_full}/3.8-advglsl_blue-vrtx.glsl"
+    "${shader_dir_full}/3.8-advglsl_green-frag.glsl"
+    "${shader_dir_full}/3.8-advglsl_green-vrtx.glsl"
+    "${shader_dir_full}/3.8-advglsl_red-frag.glsl"
+    "${shader_dir_full}/3.8-advglsl_red-vrtx.glsl"
+    "${shader_dir_full}/3.8-advglsl_yellow-frag.glsl"
+    "${shader_dir_full}/3.8-advglsl_yellow-vrtx.glsl"
+    "${shader_dir_full}/3.9-axes-frag.glsl"
+    "${shader_dir_full}/3.9-axes-geo.glsl"
+    "${shader_dir_full}/3.9-axes-vrtx.glsl"
+    "${shader_dir_full}/3.9-explode-frag.glsl"
+    "${shader_dir_full}/3.9-explode-geo.glsl"
+    "${shader_dir_full}/3.9-explode-vrtx.glsl"
+    "${shader_dir_full}/3.9-frag.glsl"
+    "${shader_dir_full}/3.9-geo.glsl"
+    "${shader_dir_full}/3.9-vrtx.glsl"
+    "${shader_dir_full}/3.9-normal-frag.glsl"
+    "${shader_dir_full}/3.9-normal-geo.glsl"
+    "${shader_dir_full}/3.9-normal-vrtx.glsl"
+    "${shader_dir_full}/4.1-blinnphong2-frag.glsl"
+    "${shader_dir_full}/4.1-blinnphong2-vrtx.glsl"
+    "${shader_dir_full}/4.1-blinnphong-frag.glsl"
+    "${shader_dir_full}/4.1-blinnphong-vrtx.glsl"
+    "${shader_dir_full}/4.2-gamma-frag.glsl"
+    "${shader_dir_full}/4.2-gamma-vrtx.glsl"
+    "${shader_dir_full}/4.3-light_shadow-frag.glsl"
+    "${shader_dir_full}/4.3-light_shadow-vrtx.glsl"
+    "${shader_dir_full}/4.3-shadowmap-frag.glsl"
+    "${shader_dir_full}/4.3-shadowmap-vrtx.glsl"
+    "${shader_dir_full}/4.4-plight_shadow-frag.glsl"
+    "${shader_dir_full}/4.4-plight_shadow-vrtx.glsl"
+    "${shader_dir_full}/4.4-shadowmap_pl-frag.glsl"
+    "${shader_dir_full}/4.4-shadowmap_pl-geo.glsl"
+    "${shader_dir_full}/4.4-shadowmap_pl-vrtx.glsl"
+    "${shader_dir_full}/4.5-normal01-frag.glsl"
+    "${shader_dir_full}/4.5-normal01-vrtx.glsl"
+    "${shader_dir_full}/4.6-normal02-frag.glsl"
+    "${shader_dir_full}/4.6-normal02-vrtx.glsl"
+    "${shader_dir_full}/4.7-parallax-frag.glsl"
+    "${shader_dir_full}/4.7-parallax-vrtx.glsl"
+    "${shader_dir_full}/4.8-hdr-frag.glsl"
+    "${shader_dir_full}/4.8-hdr-vrtx.glsl"
+    "${shader_dir_full}/4.9-bloom-frag.glsl"
+    "${shader_dir_full}/4.9-bloom-vrtx.glsl"
+    "${shader_dir_full}/4.10.1-deferred_geometry-frag.glsl"
+    "${shader_dir_full}/4.10.1-deferred_geometry-vrtx.glsl"
+    "${shader_dir_full}/4.10.2-deferred_lighting-frag.glsl"
+    "${shader_dir_full}/4.10.2-deferred_lighting-vrtx.glsl"
+    "${shader_dir_full}/4.11.1-ssao_geometry-frag.glsl"
+    "${shader_dir_full}/4.11.1-ssao_geometry-vrtx.glsl"
+    "${shader_dir_full}/4.11.2-ssao_draw-frag.glsl"
+    "${shader_dir_full}/4.11.2-ssao_draw-vrtx.glsl"
+    "${shader_dir_full}/4.11.3-ssao_blur-frag.glsl"
+    "${shader_dir_full}/4.11.4-ssao_lighting-frag.glsl"
 )
 
 
@@ -301,58 +301,61 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
 #               Header Files
 # ----------------------------------------------------------------------------------------
 set(abstractHeaders
-    "${CMAKE_SOURCE_DIR}/headers/abstract/application.h"
-    "${CMAKE_SOURCE_DIR}/headers/abstract/Camera.h"
-    "${CMAKE_SOURCE_DIR}/headers/abstract/light.h"
-    "${CMAKE_SOURCE_DIR}/headers/abstract/material.h"
-    "${CMAKE_SOURCE_DIR}/headers/abstract/matrix4.h"
-    "${CMAKE_SOURCE_DIR}/headers/abstract/mesh.h"
-    "${CMAKE_SOURCE_DIR}/headers/abstract/model.h"
-    "${CMAKE_SOURCE_DIR}/headers/abstract/queue.h"
-    "${CMAKE_SOURCE_DIR}/headers/abstract/scene.h"
-    "${CMAKE_SOURCE_DIR}/headers/abstract/scene_state.h"
-    "${CMAKE_SOURCE_DIR}/headers/abstract/shader.h"
-    "${CMAKE_SOURCE_DIR}/headers/abstract/transform.h"
-    "${CMAKE_SOURCE_DIR}/headers/abstract/ui.h"
-    "${CMAKE_SOURCE_DIR}/headers/abstract/uniforms.h"
-    "${CMAKE_SOURCE_DIR}/headers/abstract/vector2.h"
-    "${CMAKE_SOURCE_DIR}/headers/abstract/vector3.h"
-    "${CMAKE_SOURCE_DIR}/headers/abstract/vector4.h"
-    "${CMAKE_SOURCE_DIR}/headers/abstract/window_state.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/abstract/renderer.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/abstract/Camera.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/abstract/light.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/abstract/material.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/abstract/matrix4.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/abstract/mesh.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/abstract/model.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/abstract/queue.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/abstract/scene.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/abstract/scene_state.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/abstract/shader.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/abstract/transform.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/abstract/ui.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/abstract/uniforms.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/abstract/vector2.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/abstract/vector3.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/abstract/vector4.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/abstract/window_state.h"
 )
-
+    
 set(coreHeaders
-    "${CMAKE_SOURCE_DIR}/headers/core/opengl.h"
-    "${CMAKE_SOURCE_DIR}/headers/core/ui.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/core/opengl.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/core/ui.h"
 )
+    
+    set(dataHeaders
+    "${CMAKE_SOURCE_DIR}/source/headers/data/data.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/data/scenes.h"
+    )
+    # pattern wise adding all files
+    file(GLOB dataHeaders "${CMAKE_SOURCE_DIR}/source/headers/data/*.h")
 
-set(dataHeaders
-    "${CMAKE_SOURCE_DIR}/headers/data/data.h"
-    "${CMAKE_SOURCE_DIR}/headers/data/scenes.h"
-)
 
 set(eventsHeaders
-    "${CMAKE_SOURCE_DIR}/headers/events/events.h"
-    "${CMAKE_SOURCE_DIR}/headers/events/input_observer.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/events/events.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/events/input_observer.h"
 )
 
 set(mapsHeaders
-    "${CMAKE_SOURCE_DIR}/headers/maps/shaders.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/maps/shaders.h"
 )
 
 set(templatesHeaders
-    "${CMAKE_SOURCE_DIR}/headers/templates/header_template_1.0.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/templates/header_template_1.0.h"
 )
 
 set(testHeaders
-    "${CMAKE_SOURCE_DIR}/headers/test/basic.h"
-    "${CMAKE_SOURCE_DIR}/headers/test/integration_tests.h"
-    "${CMAKE_SOURCE_DIR}/headers/test/unit_tests.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/test/basic.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/test/integration_tests.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/test/unit_tests.h"
 )
 
 set(utilsHeaders
-    "${CMAKE_SOURCE_DIR}/headers/utils/utilities.h"
-    "${CMAKE_SOURCE_DIR}/headers/utils/light_yaml_parser.hpp"
+    "${CMAKE_SOURCE_DIR}/source/headers/utils/utilities.h"
+    "${CMAKE_SOURCE_DIR}/source/headers/utils/light_yaml_parser.hpp"
 )
 
 # ----------------------------------------------------------------------------------------
@@ -394,14 +397,14 @@ source_group(TREE ${shader_dir_full} PREFIX "shaders" FILES ${shaderFiles})
 # ----------------------------------------------------------------------------------------
 #               Organize Header Files into Folders
 # ----------------------------------------------------------------------------------------
-source_group(TREE ${CMAKE_SOURCE_DIR}/headers/abstract PREFIX "headers/abstract" FILES ${abstractHeaders})
-source_group(TREE ${CMAKE_SOURCE_DIR}/headers/core PREFIX "headers/core" FILES ${coreHeaders})
-source_group(TREE ${CMAKE_SOURCE_DIR}/headers/data PREFIX "headers/data" FILES ${dataHeaders})
-source_group(TREE ${CMAKE_SOURCE_DIR}/headers/events PREFIX "headers/events" FILES ${eventsHeaders})
-source_group(TREE ${CMAKE_SOURCE_DIR}/headers/maps PREFIX "headers/maps" FILES ${mapsHeaders})
-source_group(TREE ${CMAKE_SOURCE_DIR}/headers/templates PREFIX "headers/templates" FILES ${templatesHeaders})
-source_group(TREE ${CMAKE_SOURCE_DIR}/headers/test PREFIX "headers/test" FILES ${testHeaders})
-source_group(TREE ${CMAKE_SOURCE_DIR}/headers/utils PREFIX "headers/utils" FILES ${utilsHeaders})
+source_group(TREE ${CMAKE_SOURCE_DIR}/source/headers/abstract PREFIX "source/headers/abstract" FILES ${abstractHeaders})
+source_group(TREE ${CMAKE_SOURCE_DIR}/source/headers/core PREFIX "source/headers/core" FILES ${coreHeaders})
+source_group(TREE ${CMAKE_SOURCE_DIR}/source/headers/data PREFIX "source/headers/data" FILES ${dataHeaders})
+source_group(TREE ${CMAKE_SOURCE_DIR}/source/headers/events PREFIX "source/headers/events" FILES ${eventsHeaders})
+source_group(TREE ${CMAKE_SOURCE_DIR}/source/headers/maps PREFIX "source/headers/maps" FILES ${mapsHeaders})
+source_group(TREE ${CMAKE_SOURCE_DIR}/source/headers/templates PREFIX "source/headers/templates" FILES ${templatesHeaders})
+source_group(TREE ${CMAKE_SOURCE_DIR}/source/headers/test PREFIX "source/headers/test" FILES ${testHeaders})
+source_group(TREE ${CMAKE_SOURCE_DIR}/source/headers/utils PREFIX "source/headers/utils" FILES ${utilsHeaders})
 
 
 # ----------------------------------------------------------------------------------------
@@ -444,14 +447,14 @@ target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL)
 # Add the headers directory so the compiler can find header files
 include_directories(
     # "${CMAKE_SOURCE_DIR}/headers"
-    "${CMAKE_SOURCE_DIR}/headers/abstract"
-    "${CMAKE_SOURCE_DIR}/headers/core"
-    "${CMAKE_SOURCE_DIR}/headers/data"
-    "${CMAKE_SOURCE_DIR}/headers/events"
-    "${CMAKE_SOURCE_DIR}/headers/maps"
-    "${CMAKE_SOURCE_DIR}/headers/templates"
-    "${CMAKE_SOURCE_DIR}/headers/test"
-    "${CMAKE_SOURCE_DIR}/headers/utils"
+    "${CMAKE_SOURCE_DIR}/source/headers/abstract"
+    "${CMAKE_SOURCE_DIR}/source/headers/core"
+    "${CMAKE_SOURCE_DIR}/source/headers/data"
+    "${CMAKE_SOURCE_DIR}/source/headers/events"
+    "${CMAKE_SOURCE_DIR}/source/headers/maps"
+    "${CMAKE_SOURCE_DIR}/source/headers/templates"
+    "${CMAKE_SOURCE_DIR}/source/headers/test"
+    "${CMAKE_SOURCE_DIR}/source/headers/utils"
 )
 
 # ----------------------- glad

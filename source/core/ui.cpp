@@ -12,7 +12,7 @@
 #include "../../libs/imgui/backends/imgui_impl_glfw.h"
 #include "../../libs/imgui/backends/imgui_impl_opengl3.h"
 #include "../../libs/imgui/imgui.h"
-#include "application.h"
+#include "renderer.h"
 // test
 
 // ---------------------------------------------------------------------------------------
@@ -20,13 +20,24 @@
 // ---------------------------------------------------------------------------------------
 void drawKeybindingsTab();
 void drawGraphicsTab();
-void drawParametersTab(const Application& app);
+void drawParametersTab(const Renderer& app);
+
+// ---------------------------------------------------------------------------------------
+//				Variables
+// ---------------------------------------------------------------------------------------
+enum class UITabs
+{
+    SceneDataControl,
+    Keybindings
+};
+
+UITabs selected_tab = UITabs::SceneDataControl;  // Default tab
 
 // ---------------------------------------------------------------------------------------
 //				Functions
 // ---------------------------------------------------------------------------------------
 
-void Application::initUISystem(const char*& glsl_version)
+void Renderer::initUISystem(const char*& glsl_version)
 {
     //  :: IMGUI Init
     IMGUI_CHECKVERSION();
@@ -44,13 +55,13 @@ void Application::initUISystem(const char*& glsl_version)
     ImGui_ImplOpenGL3_Init(glsl_version);
 }
 
-void Application::drawUI()
+void Renderer::drawUI()
 {
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void Application::updateUI()
+void Renderer::updateUI()
 {
     ImGui_ImplOpenGL3_NewFrame();
     ImGuiIO& io = ImGui::GetIO();
@@ -163,10 +174,11 @@ void Application::updateUI()
             ImGui::EndMenu();
         }
 
-        //if (ImGui::MenuItem("Keybindings", ""))
-        //{
-        //    input_speaker.notifyUIEvent(UIEvent::OpenUISegment, {});
-        //}
+        if (ImGui::MenuItem("Options (G)", ""))
+        {
+            active_scene->scene_state.toggle_ui = !active_scene->scene_state.toggle_ui;
+            //input_speaker.notifyUIEvent(UIEvent::OpenUISegment, {});
+        }
 
         ImGui::EndMainMenuBar();
     }
@@ -178,26 +190,105 @@ void Application::updateUI()
     // --------------------------------------------------------------------------------------
     // 2. Show a simple window that we create ourselves.We use a Begin / End pair to create a named window.
     {
-        ImGui::Begin("Scene Controls");  // Create a window called "Scene Controls"
+        ImGui::Begin("Options");  // Create a window called "Scene Controls"
 
         if (ImGui::BeginTabBar("Tabs"))  // Start the tab bar
         {
             // Parameters Tab
-            if (ImGui::BeginTabItem("Parameters"))
+            if (ImGui::BeginTabItem("Scene Data"))
             {
+                // Render View Mode Dropdown
+                ImGui::Text("Render View Mode");
+
+                static RenderViewMode selected_mode = RenderViewMode::ILLUMINATION;
+                const char*           mode_names[]  = {"Illumination", "SSAO"};
+
+                if (ImGui::BeginCombo("Render Mode", mode_names[static_cast<int>(selected_mode)]))
+                {
+                    for (int i = 0; i < IM_ARRAYSIZE(mode_names); ++i)
+                    {
+                        bool is_selected = (static_cast<int>(selected_mode) == i);
+                        if (ImGui::Selectable(mode_names[i], is_selected))
+                        {
+                            selected_mode = static_cast<RenderViewMode>(i); 
+                            input_speaker.notifyUIEvent(UIEvent::SetRenderView, {i});
+                        }
+                        if (is_selected) ImGui::SetItemDefaultFocus();
+                    }
+                    ImGui::EndCombo();
+                }
+
                 ImGui::Text("Camera Controls");
-                ImGui::SliderFloat("Camera Pos X", &this->active_scene->cameras[0].position.x, -10.0f, 10.0f);
-                ImGui::SliderFloat("Camera Pos Y", &this->active_scene->cameras[0].position.y, -10.0f, 10.0f);
-                ImGui::SliderFloat("Camera Pos Z", &this->active_scene->cameras[0].position.z, -10.0f, 10.0f);
-                ImGui::SliderFloat("Camera Yaw  ", &this->active_scene->cameras[0].yaw_rad, -10.0f, 10.0f);
-                ImGui::SliderFloat("Camera Pitch", &this->active_scene->cameras[0].pitch_rad, -10.0f, 10.0f);
+                static int               selected_camera = 0;
+                std::vector<std::string> camera_names;
+                for (size_t i = 0; i < this->active_scene->cameras.size(); ++i)
+                {
+                    camera_names.push_back("Camera " + std::to_string(i + 1));
+                }
+
+                const char* current_camera = camera_names[selected_camera].c_str();
+                if (ImGui::BeginCombo("Select Camera", current_camera))
+                {
+                    for (size_t i = 0; i < camera_names.size(); ++i)
+                    {
+                        bool is_selected = (selected_camera == i);
+                        if (ImGui::Selectable(camera_names[i].c_str(), is_selected))
+                        {
+                            selected_camera = i;
+                        }
+                        if (is_selected) ImGui::SetItemDefaultFocus();
+                    }
+                    ImGui::EndCombo();
+                }
+
+                ImGui::SliderFloat("Camera Position X", &this->active_scene->cameras[selected_camera].position.x, -10.0f,
+                                   10.0f);
+                ImGui::SliderFloat("Camera Position Y", &this->active_scene->cameras[selected_camera].position.y, -10.0f,
+                                   10.0f);
+                ImGui::SliderFloat("Camera Position Z", &this->active_scene->cameras[selected_camera].position.z, -10.0f,
+                                   10.0f);
+                ImGui::SliderFloat("Yaw", &this->active_scene->cameras[selected_camera].yaw_rad, -3.14f, 3.14f);
+                ImGui::SliderFloat("Pitch", &this->active_scene->cameras[selected_camera].pitch_rad, -3.14f, 3.14f);
 
                 if (!this->active_scene->point_lights.empty())
                 {
                     ImGui::Text("Point Light Controls");
-                    ImGui::SliderFloat("p light 01 x", &this->active_scene->point_lights[0].position.x, -10.0f, 10.0f);
-                    ImGui::SliderFloat("p light 01 y", &this->active_scene->point_lights[0].position.y, -10.0f, 10.0f);
-                    ImGui::SliderFloat("p light 01 z", &this->active_scene->point_lights[0].position.z, -10.0f, 10.0f);
+                    // Dropdown to select which light to control
+                    static int               selected_light = 0;
+                    std::vector<std::string> light_names;
+                    for (size_t i = 0; i < this->active_scene->point_lights.size(); ++i)
+                    {
+                        light_names.push_back("Point Light " + std::to_string(i + 1));
+                    }
+
+                    const char* current_item = light_names[selected_light].c_str();
+                    if (ImGui::BeginCombo("Select Light", current_item))
+                    {
+                        for (size_t i = 0; i < light_names.size(); ++i)
+                        {
+                            bool is_selected = (selected_light == i);
+                            if (ImGui::Selectable(light_names[i].c_str(), is_selected))
+                            {
+                                selected_light = i;
+                            }
+                            if (is_selected) ImGui::SetItemDefaultFocus();
+                        }
+                        ImGui::EndCombo();
+                    }
+
+                    // Controls for the selected point light
+                    ImGui::SliderFloat("Point Light Position X", &this->active_scene->point_lights[selected_light].position.x,
+                                       -10.0f, 10.0f);
+                    ImGui::SliderFloat("Point Light Position Y", &this->active_scene->point_lights[selected_light].position.y,
+                                       -10.0f, 10.0f);
+                    ImGui::SliderFloat("Point Light Position Z", &this->active_scene->point_lights[selected_light].position.z,
+                                       -10.0f, 10.0f);
+                    // Light Intensity (Brightness)
+                    ImGui::SliderFloat("Brightness", &this->active_scene->point_lights[selected_light].brightness, 0.0f,
+                                       10.0f);
+
+                    // Light Color Picker (RGB)
+                    ImGui::ColorEdit3("Light Color", &this->active_scene->point_lights[selected_light].diffuse.x);
                 }
 
                 ImGui::Checkbox("Toggle Screen Space Ambient Occlusion", &this->active_scene->scene_state.toggle_ssao);
@@ -219,7 +310,7 @@ void Application::updateUI()
     // --------------------------------------------------------------------------------------
 }
 
-void drawParametersTab(const Application& app) {}
+void drawParametersTab(const Renderer& app) {}
 
 void drawGraphicsTab()
 {
@@ -287,6 +378,6 @@ void drawKeybindingsTab()
     }
 }
 
-void Application::toggleScreenshotMode() { screenshot_mode = !screenshot_mode; }
+void Renderer::toggleScreenshotMode() { screenshot_mode = !screenshot_mode; }
 
-void Application::toggleAO() { active_scene->scene_state.toggle_ssao = !active_scene->scene_state.toggle_ssao; }
+void Renderer::toggleAO() { active_scene->scene_state.toggle_ssao = !active_scene->scene_state.toggle_ssao; }

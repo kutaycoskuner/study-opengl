@@ -2,7 +2,7 @@
 // ----------------------------------------------------------------------------
 // ----- libraries
 // ----------------------------------------------------------------------------
-#include "../../headers/data/scenes.h"
+#include "../../source/headers/data/scene_data.h"
 #include "../../headers/utils/utilities.h"
 
 // ----------------------------------------------------------------------------
@@ -42,8 +42,8 @@ void GammaCorrectionTestScene::loadData()
 
 	// ----- define predefined elements
 	predefined_scene_elements.push_back(PrimitiveSceneNodes::ground_platform);
-	predefined_scene_elements[0].shader_name = "blinnphong";
-	predefined_scene_elements[0].shader_name = "gamma";
+        predefined_scene_elements[0].shader_id   = ShaderID::BlinnPhong;
+        predefined_scene_elements[0].shader_id = ShaderID::Gamma;
 
 	predefined_scene_elements[0].texture_name		= "out_pavingstones080_2k";
 	//predefined_scene_elements[0].transform.scale	= Vec3(40.0f, 0.2f, 40.0f);
@@ -102,14 +102,14 @@ void GammaCorrectionTestScene::update() {
 	// move lights radial
 	// --------------------------------------------------------------------------------------
 	float distance_multiplier = 3.0f;
-	const float pi = 3.141592f;
+	const float PI = 3.141592f;
 	for (int ii = 0; ii < point_lights.size(); ii++)
 	{
 		// change light position
 		point_lights[ii].position = Vec3(
-			distance_multiplier * cos(scene_state.time + 2 * pi / point_lights.size() * ii),
+			distance_multiplier * cos(scene_state.time + 2 * PI / point_lights.size() * ii),
 			1.0f,
-			distance_multiplier * sin(scene_state.time + 2 * pi / point_lights.size() * ii))
+			distance_multiplier * sin(scene_state.time + 2 * PI / point_lights.size() * ii))
 			;
 
 		// change light color
@@ -174,9 +174,9 @@ void GammaCorrectionTestScene::update() {
 	std::map<float, PrimitiveSceneNode> sorted;
 	std::sort(predefined_scene_elements.begin(), predefined_scene_elements.end(),
 		[this](const PrimitiveSceneNode& a, const PrimitiveSceneNode& b) {
-			float distanceA = vec_utils::length(this->cameras[0].position - a.transform.position);
-			float distanceB = vec_utils::length(this->cameras[0].position - b.transform.position);
-			return distanceA > distanceB;
+			float distance_a = vec_utils::length(this->cameras[0].position - a.transform.position);
+			float distance_b = vec_utils::length(this->cameras[0].position - b.transform.position);
+			return distance_a > distance_b;
 		});
 
 }

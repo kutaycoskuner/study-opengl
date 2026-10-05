@@ -1,10 +1,10 @@
 // ------------------------------------------------------------------------------------------------
 //				Libraries
 // ------------------------------------------------------------------------------------------------
-#include "../headers/abstract/application.h"
-#include "../headers/core/openGL.h"
-#include "../headers/test/basic.h"
-#include "../headers/utils/utilities.h"
+#include "renderer.h"
+#include "openGL.h"
+#include "basic.h"
+#include "utilities.h"
 #include <iostream>
 #include <unordered_map>
 
@@ -14,7 +14,7 @@
 int main()
 {
 	// get config
-	Application::ConfigData config;
+	Renderer::ConfigData config;
 	std::string path_mode = "relative";
 
 	//std::cout << "trying to load config from artifacts path." << std::endl;
@@ -46,7 +46,7 @@ int main()
 	test();
 
 	// instantiate
-	Application app;
+	Renderer app;
 
 	// start program
 	app.initialize(config);

@@ -2,7 +2,7 @@
 // ----------------------------------------------------------------------------
 //				libraries
 // ----------------------------------------------------------------------------
-#include "../../headers/data/scenes.h"
+#include "../../source/headers/data/scene_data.h"
 
 // ----------------------------------------------------------------------------
 //				forward declarations
@@ -65,7 +65,7 @@ void SSAOTestScene::loadData()
 	//point_lights.back().brightness = 1.0f;
 	//point_lights.back().position = Vec3(1.0, 2.0f, -1.0f);
 
-	int num_point_lights = 4;
+	int num_point_lights = 1;
 	for (int i = 0; i < num_point_lights; i++)
     {
 		point_lights.push_back(PredefSceneLights::p_light);
@@ -85,14 +85,14 @@ void SSAOTestScene::loadData()
 	float multiplier = 3.0f;
 
 	point_lights[0].position = Vec3(multiplier,  4.0f, multiplier);
-    point_lights[1].position = Vec3(-multiplier, 4.0f, multiplier);
-    point_lights[2].position = Vec3(multiplier,  4.0f, -multiplier);
-    point_lights[3].position = Vec3(-multiplier, 4.0f, -multiplier);
+    //point_lights[1].position = Vec3(-multiplier, 4.0f, multiplier);
+    //point_lights[2].position = Vec3(multiplier,  4.0f, -multiplier);
+    //point_lights[3].position = Vec3(-multiplier, 4.0f, -multiplier);
 
-	point_lights[0].diffuse = Vec3(1.0f, 0.0f, 0.0f);
-    point_lights[1].diffuse = Vec3(0.0f, 1.0f, 0.0f);
-    point_lights[2].diffuse = Vec3(0.0f, 0.0f, 1.0f);
-    point_lights[3].diffuse = Vec3(1.0f, 0.0f, 1.0f);
+	point_lights[0].diffuse = Vec3(1.0f, 0.0f, 1.0f);
+    //point_lights[1].diffuse = Vec3(0.0f, 1.0f, 0.0f);
+    //point_lights[2].diffuse = Vec3(0.0f, 0.0f, 1.0f);
+    //point_lights[3].diffuse = Vec3(1.0f, 0.0f, 1.0f);
 
 	//point_lights.push_back(PredefSceneLights::p_light);
 	//point_lights.back().diffuse = Vec3(0.0f, 0.0f, 1.0f);
@@ -128,7 +128,7 @@ void SSAOTestScene::loadData()
 
 	// models
 	// ----------------------------------------------------------------
-	scene_state.model_shader_name = "hdr";
+        scene_state.model_shader_id = ShaderID::HDR;
 	model_paths = {
 		// "models/out_sponza/glTF/Sponza.gltf"
 		//std::string("/yurt/scenes/sponza_crytek/gltf/sponza.gltf"),
@@ -170,7 +170,7 @@ void SSAOTestScene::loadData()
 
 	//if (scene_nodes.size() > 0)
 	//	scene_nodes[0].transform.scale = Vec3(0.01f, 0.01f, 0.01f);
-        scene_state.model_shader_name = "hdr";
+        scene_state.model_shader_id = ShaderID::HDR;
 
 }
 
@@ -186,21 +186,21 @@ void SSAOTestScene::update() {
 //
 //	// move lights radial
 //// --------------------------------------------------------------------------------------
-//	float distance_multiplier = 3.0f;
-//	const float pi = 3.141592f;
-//	for (int ii = 0; ii < point_lights.size(); ii++)
-//	{
-//		// change light position
-//		point_lights[ii].position = Vec3(
-//			distance_multiplier * cos(scene_state.time + 2 * pi / point_lights.size() * ii),
-//			3.0f,
-//			distance_multiplier * sin(scene_state.time + 2 * pi / point_lights.size() * ii))
-//			;
-//
-//		// change light color
-//		float change_key = scene_state.time + ii;
-//		setTriangleLightColorShiftByTime(point_lights[ii].diffuse, point_lights[ii].specular, change_key);
-//	}
+	float distance_multiplier = 3.0f;
+	const float PI = 3.141592f;
+	for (int ii = 0; ii < point_lights.size(); ii++)
+	{
+		// change light position
+		point_lights[ii].position = Vec3(
+			distance_multiplier * cos(scene_state.time + 2 * PI / point_lights.size() * ii),
+			3.0f,
+			distance_multiplier * sin(scene_state.time + 2 * PI / point_lights.size() * ii))
+			;
+
+		// change light color
+		float change_key = scene_state.time + ii;
+		setTriangleLightColorShiftByTime(point_lights[ii].diffuse, point_lights[ii].specular, change_key);
+	}
 //
 //
 //	// rotate obj x z 

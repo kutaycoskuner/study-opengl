@@ -1,4 +1,6 @@
-#include "data.h" // data headers ex. model vertices
+#include "geometry.h" // data headers ex. model vertices
+
+#include <string>
 #include <iostream>
 
 std::string formatFloat(float value) {
@@ -10,15 +12,15 @@ void Geometry::subdivide(const Vec3& v1, const Vec3& v2, const Vec3& v3, unsigne
     if (level == 0)
     {
         // Add the vertices of the triangle to the vertex array
-        int startIdx = vertices.size();
+        int start_idx = vertices.size();
         vertices.push_back(v1);
         vertices.push_back(v2);
         vertices.push_back(v3);
 
         // Add the indices of the triangle
-        indices.push_back(startIdx);
-        indices.push_back(startIdx + 1);
-        indices.push_back(startIdx + 2);
+        indices.push_back(start_idx);
+        indices.push_back(start_idx + 1);
+        indices.push_back(start_idx + 2);
 
         return;
     }
