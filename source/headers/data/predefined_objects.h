@@ -63,7 +63,7 @@ public:
 	static const Material RED_PLASTIC;
 	static const Material WHITE_PLASTIC;
 	static const Material YELLOW_PLASTIC;
-	static const Material BLACK_PLASTIC;
+	static const Material BLACK_RUBBER;
 	static const Material CYAN_RUBBER;
 	static const Material GREEN_RUBBER;
 	static const Material RED_RUBBER;
