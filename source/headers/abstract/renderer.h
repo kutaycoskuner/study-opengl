@@ -75,8 +75,8 @@ public:
     unsigned int active_test_scene  = 0;
 
     // standards
-    static const Vec3 world_up;
-    static const Vec3 world_origin;
+    static const Vec3 WORLD_UP;
+    static const Vec3 WORLD_ORIGIN;
 
     static bool toggle_mouselock;
 
@@ -231,7 +231,7 @@ private:
 
 private:
     const static unsigned int buffer_count  = 10;
-    const float reduction_128f              = 0.0078125f;
+    const float REDUCTION_128F              = 0.0078125f;
     const unsigned int INVALID_ID           = 0;
 
     // Uygulama veri ve state tanimlari

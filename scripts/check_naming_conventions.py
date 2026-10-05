@@ -37,27 +37,23 @@ import re
 # ----------------------------------------------------------------------------------------
 #               functions
 # ----------------------------------------------------------------------------------------
-def extract_type_names(content):
-    """
-    Extract user-defined type names like structs, classes, and templates.
-    Returns a set of names.
-    """
-    type_names = set()
+def extract_custom_types(content):
+    """Extract custom class and struct names from C++ content."""
+    custom_types = set()
     
-    # Match struct/class names: struct MyStruct { or class MyClass {
-    pattern = r'\b(?:struct|class)\s+(\w+)\s*\{'
-    matches = re.finditer(pattern, content)
+    # Pattern for class definitions
+    class_pattern = r'\bclass\s+(\w+)(?:\s*:\s*[^{]+)?\s*\{'
+    matches = re.finditer(class_pattern, content, re.MULTILINE)
     for match in matches:
-        type_names.add(match.group(1))
+        custom_types.add(match.group(1))
     
-    # Match templates: template<typename T> class MyTemplate { ... }
-    template_pattern = r'template\s*<[^>]*>\s*(?:class|struct)\s+(\w+)\s*\{'
-    template_matches = re.finditer(template_pattern, content)
-    for match in template_matches:
-        type_names.add(match.group(1))
-
-    return type_names
-
+    # Pattern for struct definitions
+    struct_pattern = r'\bstruct\s+(\w+)(?:\s*:\s*[^{]+)?\s*\{'
+    matches = re.finditer(struct_pattern, content, re.MULTILINE)
+    for match in matches:
+        custom_types.add(match.group(1))
+    
+    return custom_types
 
 def remove_comments(content):
     """
@@ -130,13 +126,23 @@ def is_iterator_variable(content, var_name):
     common_iterators = {'i', 'j', 'k', 'idx', 'index', 'it', 'iter'}
     return var_name in common_iterators
 
-def extract_functions(content):
+def extract_functions(content, custom_types=None):
     """Extract function names from C++ content."""
+    if custom_types is None:
+        custom_types = set()
+    
     functions = []
     
+    # Build type pattern including custom types
+    basic_types = r'(?:void|int|float|double|char|bool|string|auto|[\w:]+)'
+    if custom_types:
+        custom_types_pattern = '|'.join(re.escape(t) for t in custom_types)
+        type_pattern = f'(?:{basic_types}|{custom_types_pattern})'
+    else:
+        type_pattern = basic_types
+    
     # Pattern for function definitions
-    # Matches: return_type function_name(parameters) or return_type function_name()
-    function_pattern = r'\b(?:void|int|float|double|char|bool|string|auto|[\w:]+)\s+(\w+)\s*\([^)]*\)\s*\{'
+    function_pattern = r'\b{}\s+(\w+)\s*\([^)]*\)\s*\{{'.format(type_pattern)
     
     matches = re.finditer(function_pattern, content, re.MULTILINE)
     for match in matches:
@@ -147,33 +153,55 @@ def extract_functions(content):
     
     return functions
 
-def extract_variables(content):
-    """Extract variable names from C++ content."""
+def extract_variables(content, custom_types=None):
+    """Extract variable names from C++ content, ignoring names after 'new'."""
+    if custom_types is None:
+        custom_types = set()
+    
     variables = []
     
-    # Pattern for variable declarations
-    # Matches: type variable_name; or type variable_name = value;
-    var_pattern = r'\b(?:int|float|double|char|bool|string|auto|const\s+\w+|\w+)\s+(\w+)(?:\s*=\s*[^;]+)?;'
+    # Updated pattern to handle multi-word type declarations
+    excluded_keywords = r'(?!(?:return|if|for|while|switch|case|break|continue|goto|else|try|catch|throw|delete|sizeof|typedef|using|namespace|template|class|struct|enum|union|public|private|protected|virtual|static|extern|inline|const|volatile|mutable|explicit|friend|operator)\s)'
+    
+    # Allow multi-word type declarations (like "const unsigned int")
+    var_pattern = rf'\b(?!new\s+){excluded_keywords}(?:\w+\s+)+(\w+)(?:\s*=\s*[^;]+)?;'
+    
+    cpp_builtin_types = {
+        'int', 'float', 'double', 'char', 'bool', 'void', 'auto',
+        'size_t', 'uint32_t', 'uint64_t', 'int32_t', 'int64_t',
+        'long', 'short', 'signed', 'unsigned', 'wchar_t'
+    }
     
     matches = re.finditer(var_pattern, content, re.MULTILINE)
     for match in matches:
         var_name = match.group(1)
+        if var_name in cpp_builtin_types:
+            continue
         # Skip common keywords and function calls
-        if var_name not in ['if', 'for', 'while', 'switch', 'return', 'class', 'struct']:
+        if var_name not in ['if', 'for', 'while', 'switch', 'return', 'class', 'struct', 'break', 'continue', 'case', 'default']:
             # Skip iterator variables
             if not is_iterator_variable(content, var_name):
-                variables.append(var_name)
+                # Additional check: make sure this isn't part of a 'new' expression
+                match_start = match.start()
+                preceding_text = content[max(0, match_start-20):match_start]
+                if not re.search(r'\bnew\s*$', preceding_text):
+                    variables.append(var_name)
     
     return variables
 
 def is_likely_constant(content, var_name):
     """Check if a variable is likely a constant based on context."""
-    # Look for const keyword or #define
-    const_pattern = rf'\bconst\s+\w+\s+{re.escape(var_name)}\b'
-    define_pattern = rf'#define\s+{re.escape(var_name)}\b'
+    # Look for const keyword in declaration (handles multi-word types)
+    const_pattern = rf'\bconst\b[^;]*?\b{re.escape(var_name)}\b'
+    if re.search(const_pattern, content, re.IGNORECASE):
+        return True
     
-    return (re.search(const_pattern, content, re.IGNORECASE) or 
-            re.search(define_pattern, content, re.IGNORECASE))
+    # Look for #define macros
+    define_pattern = rf'#define\s+{re.escape(var_name)}\b'
+    if re.search(define_pattern, content, re.IGNORECASE):
+        return True
+    
+    return False
 
 def validate_naming(name, name_type, content="", is_likely_const=False):
     """
@@ -207,7 +235,6 @@ def validate_naming(name, name_type, content="", is_likely_const=False):
     return 'x'
 
 def process_cpp_file(file_path):
-    type_names = extract_type_names(content)
     """Process a single C++ file and extract functions and variables."""
     try:
         with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
@@ -215,17 +242,20 @@ def process_cpp_file(file_path):
         
         content = remove_comments(content)
         
+        # Extract custom types first
+        custom_types = extract_custom_types(content)
+        
         results = []
         
         # Extract variables first
-        variables = extract_variables(content)
+        variables = extract_variables(content, custom_types)
         for var_name in variables:
             is_const = is_likely_constant(content, var_name)
             validity = validate_naming(var_name, 'var', content, is_const)
             results.append((validity, 'var', var_name, file_path))
         
         # Then extract functions
-        functions = extract_functions(content)
+        functions = extract_functions(content, custom_types)
         for func_name in functions:
             validity = validate_naming(func_name, 'fun')
             results.append((validity, 'fun', func_name, file_path))

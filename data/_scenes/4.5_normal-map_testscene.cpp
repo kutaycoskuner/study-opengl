@@ -204,7 +204,7 @@ void NormalMapTestScene::update()
     // move lights radial
     // ----------------------------------------------------------------
     float       distance_multiplier = 3.0f;
-    const float pi                  = 3.141592f;
+    const float PI                  = 3.141592f;
 
     // Vec3 origin = (0.0f, 0.0f, 0.0f);
     // directional_lights[0].direction = (origin - directional_lights[0].position);

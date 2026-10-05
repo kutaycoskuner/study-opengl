@@ -50,8 +50,8 @@ using namespace img_utils;
 // ---------------------------------------------------------------------------------------
 constexpr unsigned int kg_error_buffer_size = 512;
 Renderer*           gp_app;
-const Vec3             Renderer::world_up         = Vec3(0.0f, 1.0f, 0.0f);
-const Vec3             Renderer::world_origin     = Vec3(0.0f, 0.0f, 0.0f);
+const Vec3             Renderer::WORLD_UP         = Vec3(0.0f, 1.0f, 0.0f);
+const Vec3             Renderer::WORLD_ORIGIN     = Vec3(0.0f, 0.0f, 0.0f);
 bool                   Renderer::toggle_mouselock = true;
 
 // ---------------------------------------------------------------------------------------
@@ -86,11 +86,12 @@ bool Renderer::initialize(const ConfigData& config)
 
     shadowmap_aspect_ratio = float(shadowmap_resolution_x) / float(shadowmap_resolution_y);
 
-    const unsigned int k_scr_width  = std::stoul(config.at("scr").at("width"));
-    const unsigned int k_scr_height = std::stoul(config.at("scr").at("height"));
-    const char*        kp_wndw_name = config.at("scr").at("wndw_name").c_str();
+    display_width  = std::stoul(config.at("scr").at("width"));
+    display_height = std::stoul(config.at("scr").at("height"));
+    const char*        PTR_WINDOW_NAME = config.at("scr").at("wndw_name").c_str();
 
-    initWindowSystem(k_scr_width, k_scr_height, kp_wndw_name);
+
+    initWindowSystem(display_width, display_height, PTR_WINDOW_NAME);
     const char* glsl_version   = "#version 330";
     window_state.b_first_mouse = true;
     window_state.mouse_x       = std::stoul(config.at("scr").at("width")) / 2.0f;
@@ -310,13 +311,13 @@ void Renderer::createNonWindowSizeDependentFrameBuffers()
 {
     // 4.3 shadow fbo
     // ---------------------------------------------------------
-    unsigned int depthMapFBO;
-    glGenFramebuffers(1, &depthMapFBO);
-    fbo_shadow.push_back(depthMapFBO);  // Store FBO ID
+    unsigned int fbo_depthmap;
+    glGenFramebuffers(1, &fbo_depthmap);
+    fbo_shadow.push_back(fbo_depthmap);  // Store FBO ID
 
-    unsigned int depthMap;
-    glGenTextures(1, &depthMap);
-    glBindTexture(GL_TEXTURE_2D, depthMap);
+    unsigned int tex_depthmap;
+    glGenTextures(1, &tex_depthmap);
+    glBindTexture(GL_TEXTURE_2D, tex_depthmap);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowmap_resolution_x, shadowmap_resolution_y, 0,
                  GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -328,7 +329,7 @@ void Renderer::createNonWindowSizeDependentFrameBuffers()
     float border_color[] = {1.0f, 1.0f, 1.0f, 1.0f};
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
 
-    tex_shadow_maps.push_back(depthMap);
+    tex_shadow_maps.push_back(tex_depthmap);
 
     // Enable drawing to the back buffer
     // glDrawBuffer(GL_BACK);
@@ -382,9 +383,9 @@ bool Renderer::load(const ConfigData& config)
         {
             // The shader with the given name exists in the map
             // Access the id of the shader through the shared pointer
-            GLuint       shaderId             = shader_iter->second->ID;
-            unsigned int uniform_block_index1 = glGetUniformBlockIndex(shaderId, "Matrices");
-            glUniformBlockBinding(shaderId, uniform_block_index1, 0);
+            GLuint       shader_id             = shader_iter->second->id;
+            unsigned int uniform_block_index1 = glGetUniformBlockIndex(shader_id, "Matrices");
+            glUniformBlockBinding(shader_id, uniform_block_index1, 0);
 
             // Now you can use the shader id as needed
         }
@@ -489,6 +490,7 @@ void Renderer::loadSceneData(const ConfigData& config)
     cam.near = std::stof(config.at("default_camera").at("near"));
     cam.far  = std::stof(config.at("default_camera").at("far"));
     cam.fov  = std::stof(config.at("default_camera").at("fov"));
+    active_scene->cameras[0].aspect_ratio = float(display_width) / float(display_height);
     // cam.rotation_sensitivity = std::stof(config.at("default_camera").at("rotation_sensitivity"));
     resetCamera();
     active_scene->loadData();
@@ -567,22 +569,22 @@ void Renderer::loadShaders()
     // Iterate over the shader paths map
     for (const auto& [shader_id, shader_resource_desc] : shader_map)
     {
-        const std::string rel_vrtx = std::string(shader_resource_desc.paths.vrtx);
-        const std::string rel_frag = std::string(shader_resource_desc.paths.frag);
-        const std::string rel_geom = std::string(shader_resource_desc.paths.geom);
+        const std::string REL_VRTX = std::string(shader_resource_desc.paths.vrtx);
+        const std::string REL_FRAG = std::string(shader_resource_desc.paths.frag);
+        const std::string REL_GEOM = std::string(shader_resource_desc.paths.geom);
 
         // Convert std::string_view to std::string within the function calls
-        const std::string vrtx = std::string(file_utils::getFileNameWithoutExtension(rel_vrtx));
-        const std::string frag = std::string(file_utils::getFileNameWithoutExtension(rel_frag));
-        const std::string geom =
-            shader_resource_desc.paths.geom.empty() ? "" : std::string(file_utils::getFileNameWithoutExtension(rel_geom));
+        const std::string VRTX = std::string(file_utils::getFileNameWithoutExtension(REL_VRTX));
+        const std::string FRAG = std::string(file_utils::getFileNameWithoutExtension(REL_FRAG));
+        const std::string GEOM =
+            shader_resource_desc.paths.geom.empty() ? "" : std::string(file_utils::getFileNameWithoutExtension(REL_GEOM));
 
         // Create the ShaderCompileDesc object
         ShaderCompileDesc shader_compile_description;
         shader_compile_description.shader_id        = shader_id;
-        shader_compile_description.vrtx_path        = shader_dir_path + rel_vrtx;
-        shader_compile_description.frag_path        = shader_dir_path + rel_frag;
-        shader_compile_description.geom_path        = geom.empty() ? "" : shader_dir_path + rel_geom;
+        shader_compile_description.vrtx_path        = shader_dir_path + REL_VRTX;
+        shader_compile_description.frag_path        = shader_dir_path + REL_FRAG;
+        shader_compile_description.geom_path        = GEOM.empty() ? "" : shader_dir_path + REL_GEOM;
 
         // Store shader in the map using shader_name as the key
         shaders[shader_id] = std::make_shared<Shader>(shader_compile_description);
@@ -739,19 +741,19 @@ void Renderer::loadMeshData()
         Model rock = active_scene->models[0];
         for (unsigned int i = 0; i < rock.meshes.size(); i++)
         {
-            unsigned int VAO = rock.meshes[i].vao;
-            glBindVertexArray(VAO);
+            unsigned int vao = rock.meshes[i].vao;
+            glBindVertexArray(vao);
             // vertex attributes
-            GLsizei vec4Size   = sizeof(Vec4);
-            size_t  vec4stride = vec4Size;
+            GLsizei vec4_size   = sizeof(Vec4);
+            size_t  vec4_stride = vec4_size;
             glEnableVertexAttribArray(3);
-            glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)0);
+            glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * vec4_size, (void*)0);
             glEnableVertexAttribArray(4);
-            glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(1 * vec4stride));
+            glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 4 * vec4_size, (void*)(1 * vec4_stride));
             glEnableVertexAttribArray(5);
-            glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(2 * vec4stride));
+            glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 4 * vec4_size, (void*)(2 * vec4_stride));
             glEnableVertexAttribArray(6);
-            glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(3 * vec4stride));
+            glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 4 * vec4_size, (void*)(3 * vec4_stride));
 
             glVertexAttribDivisor(3, 1);
             glVertexAttribDivisor(4, 1);
@@ -807,8 +809,8 @@ void Renderer::mainLoop(ConfigData& config)
     while (!glfwWindowShouldClose(window) && reload == false)
     {
         processInput(window, uni_obj);
+        //glfwGetWindowSize(window, &display_width, &display_height);
         glfwGetFramebufferSize(window, &display_width, &display_height);
-
 
         // Start the Dear ImGui frame
         updateUI();
@@ -959,43 +961,43 @@ void Renderer::compute_QuadVrtxTangents()
         // ----------
         Vec3 edge1    = pos2 - pos1;
         Vec3 edge2    = pos3 - pos1;
-        Vec2 deltaUV1 = uv2 - uv1;
-        Vec2 deltaUV2 = uv3 - uv1;
+        Vec2 delta_uv1 = uv2 - uv1;
+        Vec2 delta_uv2 = uv3 - uv1;
 
-        float det = deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y;
+        float det = delta_uv1.x * delta_uv2.y - delta_uv2.x * delta_uv1.y;
         if (abs(det) < 1e-6)
         {
             det = 1e-6;  // Prevent division by zero
         }
         float f = 1.0f / det;
 
-        tangent1.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
-        tangent1.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
-        tangent1.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+        tangent1.x = f * (delta_uv2.y * edge1.x - delta_uv1.y * edge2.x);
+        tangent1.y = f * (delta_uv2.y * edge1.y - delta_uv1.y * edge2.y);
+        tangent1.z = f * (delta_uv2.y * edge1.z - delta_uv1.y * edge2.z);
         tangent1.normalize();
 
-        bitangent1.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
-        bitangent1.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
-        bitangent1.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+        bitangent1.x = f * (-delta_uv2.x * edge1.x + delta_uv1.x * edge2.x);
+        bitangent1.y = f * (-delta_uv2.x * edge1.y + delta_uv1.x * edge2.y);
+        bitangent1.z = f * (-delta_uv2.x * edge1.z + delta_uv1.x * edge2.z);
         bitangent1.normalize();
 
         // triangle 2
         // ----------
         edge1    = pos3 - pos1;
         edge2    = pos4 - pos1;
-        deltaUV1 = uv3 - uv1;
-        deltaUV2 = uv4 - uv1;
+        delta_uv1 = uv3 - uv1;
+        delta_uv2 = uv4 - uv1;
 
         // f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
 
-        tangent2.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
-        tangent2.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
-        tangent2.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+        tangent2.x = f * (delta_uv2.y * edge1.x - delta_uv1.y * edge2.x);
+        tangent2.y = f * (delta_uv2.y * edge1.y - delta_uv1.y * edge2.y);
+        tangent2.z = f * (delta_uv2.y * edge1.z - delta_uv1.y * edge2.z);
         tangent2.normalize();
 
-        bitangent2.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
-        bitangent2.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
-        bitangent2.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+        bitangent2.x = f * (-delta_uv2.x * edge1.x + delta_uv1.x * edge2.x);
+        bitangent2.y = f * (-delta_uv2.x * edge1.y + delta_uv1.x * edge2.y);
+        bitangent2.z = f * (-delta_uv2.x * edge1.z + delta_uv1.x * edge2.z);
         bitangent2.normalize();
 
         float handedness = (math_utils::dot3d(math_utils::cross3d(tangent1, bitangent1), nm) > 0.0f) ? 1.0f : -1.0f;
@@ -1144,7 +1146,7 @@ void Renderer::drawScene(Uniforms& uni)
     //	= mat_utils::projectOrthographic(display_width / 50.0f, cam.aspect_ratio, cam.near, cam.far);
     // upv.projection_matrix
     //	= mat_utils::projectOrthographic(cam.near, cam.far, -10.0f, 10.0f, 10.0f, -10.0f);
-    upv.view_matrix      = cam.calcViewMatrix(world_up);
+    upv.view_matrix      = cam.calcViewMatrix(WORLD_UP);
     upv.view_proj_matrix = upv.projection_matrix * upv.view_matrix;
 
     // 3.8 uniform buffer object set
@@ -1199,7 +1201,7 @@ void Renderer::drawScene(Uniforms& uni)
         // draw scene
         disableStencil();
 
-        upv.view_matrix       = cam.calcViewMatrix(world_up);
+        upv.view_matrix       = cam.calcViewMatrix(WORLD_UP);
         upv.projection_matrix = mat_utils::projectPerspective(toRadian(cam.fov), cam.aspect_ratio, cam.near, cam.far);
         // upv.projection_matrix
         //	= mat_utils::projectOrthographic(cam.near, cam.far, -10.0f, 10.0f, 10.0f, -10.0f);
@@ -1227,7 +1229,7 @@ void Renderer::drawScene(Uniforms& uni)
         glViewport(0, 0, display_width, display_height);
         // draw scene
         disableStencil();
-        upv.view_matrix       = cam.calcViewMatrix(world_up);
+        upv.view_matrix       = cam.calcViewMatrix(WORLD_UP);
         upv.projection_matrix = mat_utils::projectPerspective(toRadian(cam.fov), cam.aspect_ratio, cam.near, cam.far);
         // upv.projection_matrix
         //	= mat_utils::projectOrthographic(cam.near, cam.far, -10.0f, 10.0f, 10.0f, -10.0f);
@@ -1462,7 +1464,7 @@ void Renderer::drawShadowMap()
 
     Mat4 light_view = mat_utils::lookAtDirection(p,        // position
                                                  d,        // direction
-                                                 world_up  // world up
+                                                 WORLD_UP  // world up
     );
 
     Mat4 light_space_matrix = light_projection * light_view;
@@ -1495,9 +1497,9 @@ void Renderer::drawShadowMap()
     glClear(GL_DEPTH_BUFFER_BIT);
 
     // Set the uniform for the light space matrix
-    GLuint   lightSpaceMatrixLocation = glGetUniformLocation(this->active_shader->ID, "lightSpaceMatrix");
+    GLuint   lightspace_matrix_location = glGetUniformLocation(this->active_shader->id, "lightSpaceMatrix");
     GLfloat* ptr_light_space_mat      = reinterpret_cast<GLfloat*>(&light_space_matrix._11);
-    glUniformMatrix4fv(lightSpaceMatrixLocation, 1, GL_FALSE, ptr_light_space_mat);
+    glUniformMatrix4fv(lightspace_matrix_location, 1, GL_FALSE, ptr_light_space_mat);
     ptr_mat_light_space.push_back(ptr_light_space_mat);
 
     // Render the scene
@@ -1815,9 +1817,9 @@ void Renderer::drawBackbuffer(int display_width, int display_height)
 
 void Renderer::drawSceneNode_primitive_shadows_dl(const Mat4& model_mat)
 {
-    const int element_count = static_cast<int>(active_scene->predefined_scene_elements.size());
+    const int ELEMENT_COUNT = static_cast<int>(active_scene->predefined_scene_elements.size());
     (*active_shader).use();
-    for (int i = 0; i < element_count; i++)
+    for (int i = 0; i < ELEMENT_COUNT; i++)
     {
         glBindVertexArray(0);
         active_shader->setMat4("lightSpaceMatrix", model_mat);
@@ -1852,7 +1854,7 @@ void Renderer::drawSceneNode_primitive_shadows_dl(const Mat4& model_mat)
 
 void Renderer::drawSceneNode_primitive_shadows_pl(const float far_plane)
 {
-    const int element_count = static_cast<int>(active_scene->predefined_scene_elements.size());
+    const int ELEMENT_COUNT = static_cast<int>(active_scene->predefined_scene_elements.size());
     (*active_shader).use();
     active_shader->setVec3("light_position", active_scene->point_lights[0].position);
     active_shader->setFloat("far_plane", far_plane);
@@ -1863,7 +1865,7 @@ void Renderer::drawSceneNode_primitive_shadows_pl(const float far_plane)
         active_shader->setMat4(name, mat_light_space_cubemaps[ii]);
     }
 
-    for (int i = 0; i < element_count; i++)
+    for (int i = 0; i < ELEMENT_COUNT; i++)
     {
         /*active_shader->setMat4Vector("shadow_transform_matrcies", shadow_transform_matrices);*/
 
@@ -1943,8 +1945,8 @@ void Renderer::drawSceneNodes_primitive(Uniforms& uni)
     UniformsPerObject& upo           = uni.upo;
     UniformsPerView&   upv           = uni.upv;
     UniformsPerFrame&  upf           = uni.upf;
-    int                element_count = static_cast<int>(active_scene->predefined_scene_elements.size());
-    for (int i = 0; i < element_count; i++)
+    const int                ELEMENT_COUNT = static_cast<int>(active_scene->predefined_scene_elements.size());
+    for (int i = 0; i < ELEMENT_COUNT; i++)
     {
         if (active_scene->predefined_scene_elements[i].element_bools.indexed)
         {
@@ -1988,8 +1990,8 @@ void Renderer::drawSceneNodes_primitive(Uniforms& uni)
         active_shader->setVec3("material.diffuse", 0.5f, 0.5f, 0.5f);
         active_shader->setVec3("material.specular", 0.5f, 0.5f, 0.5f);
 
-        float maxObjectScale = (std::max(model._11, std::max(model._22, model._33)));
-        // active_shader->setFloat("outline_scale", maxObjectScale);
+        float max_obj_scale = (std::max(model._11, std::max(model._22, model._33)));
+        // active_shader->setFloat("outline_scale", max_obj_scale);
 
         // assign texture
         std::string texture_name = active_scene->predefined_scene_elements[i].texture_name;
@@ -2109,8 +2111,8 @@ void Renderer::drawSceneNodes_primitive(Uniforms& uni)
             Mat4 world = model;
             active_shader->setMat4("world_matrix", world);
 
-            float maxObjectScale = (std::max(world._11, std::max(world._22, world._33)));
-            active_shader->setFloat("outline_scale", maxObjectScale);
+            float max_obj_scale = (std::max(world._11, std::max(world._22, world._33)));
+            active_shader->setFloat("outline_scale", max_obj_scale);
             if (active_scene->predefined_scene_elements[i].element_bools.indexed)
             {
                 // Bind the index buffer
@@ -2206,8 +2208,8 @@ void Renderer::drawSceneNodes_models(Uniforms& uni)
 
         active_shader->setMat4("world_mat", world);
 
-        float maxObjectScale = (std::max(world._11, std::max(world._22, world._33)));
-        active_shader->setFloat("outline_scale", maxObjectScale);
+        float max_obj_scale = (std::max(world._11, std::max(world._22, world._33)));
+        active_shader->setFloat("outline_scale", max_obj_scale);
 
         std::vector<ElementBools> bools = active_scene->scene_state.model_element_bools;
         if (bools[i].stencil_testing)
@@ -2254,8 +2256,8 @@ void Renderer::drawSceneNodes_models(Uniforms& uni)
             Mat4 world = mat_utils::identity4();
             active_shader->setMat4("world_mat", world);
 
-            float maxObjectScale = (std::max(world._11, std::max(world._22, world._33)));
-            active_shader->setFloat("outline_scale", maxObjectScale);
+            float max_obj_scale = (std::max(world._11, std::max(world._22, world._33)));
+            active_shader->setFloat("outline_scale", max_obj_scale);
             active_scene->models[i].draw(*active_shader);
             clearStencil();
         }
@@ -2362,7 +2364,7 @@ void Renderer::drawScene_skybox(Uniforms& uni)
         this->active_shader = shaders.at(ShaderID::Cubemap);
         (*active_shader).use();
         glBindVertexArray(named_arrays.at("skybox"));
-        upv.view_matrix       = cam.calcViewMatrix(world_up);
+        upv.view_matrix       = cam.calcViewMatrix(WORLD_UP);
         upv.view_matrix._14   = 0.0f;
         upv.view_matrix._24   = 0.0f;
         upv.view_matrix._34   = 0.0f;
@@ -2415,8 +2417,8 @@ void Renderer::resetCamera()
     Camera& camera = active_scene->cameras[0];
     // camera.position = Vec3(0.0f, 0.0f, 5.0f);
     camera.position                  = Vec3(-12.0f, 10.0f, 12.0f);
-    const Vec3 k_camera_target_point = Vec3(0.0f, 0.0f, 0.0f);
-    camera.lookAtTarget(k_camera_target_point);
+    const Vec3 CAMERA_TARGET_POINT = Vec3(0.0f, 0.0f, 0.0f);
+    camera.lookAtTarget(CAMERA_TARGET_POINT);
 }
 
 void Renderer::setPathType(std::string in_path_mode)

@@ -67,7 +67,7 @@ struct ShaderCompileDesc
 class Shader
 {
 public:
-    unsigned int ID;
+    unsigned int id;
     // constructor generates the shader on the fly
     // ------------------------------------------------------------------------
         // Constructor generates the shader from ShaderCompileDesc
@@ -76,42 +76,42 @@ public:
     Shader(const ShaderCompileDesc& shader_compile_desc)
     {
         // 1. Retrieve the vertex/fragment source code from filePath
-        std::string vertexCode;
-        std::string fragmentCode;
-        std::string geometryCode;
+        std::string vrtx_code;
+        std::string frag_code;
+        std::string geom_code;
 
-        std::ifstream vShaderFile;
-        std::ifstream fShaderFile;
-        std::ifstream gShaderFile;
+        std::ifstream v_shader_file;
+        std::ifstream f_shader_file;
+        std::ifstream g_shader_file;
 
         // Ensure ifstream objects can throw exceptions:
-        vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-        fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-        gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+        v_shader_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+        f_shader_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+        g_shader_file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 
         try {
             // Open files
-            vShaderFile.open(shader_compile_desc.vrtx_path);
-            fShaderFile.open(shader_compile_desc.frag_path);
+            v_shader_file.open(shader_compile_desc.vrtx_path);
+            f_shader_file.open(shader_compile_desc.frag_path);
 
             std::stringstream vShaderStream, fShaderStream;
             // Read file's buffer contents into streams
-            vShaderStream << vShaderFile.rdbuf();
-            fShaderStream << fShaderFile.rdbuf();
+            vShaderStream << v_shader_file.rdbuf();
+            fShaderStream << f_shader_file.rdbuf();
             // Close file handlers
-            vShaderFile.close();
-            fShaderFile.close();
+            v_shader_file.close();
+            f_shader_file.close();
             // Convert streams into strings
-            vertexCode = vShaderStream.str();
-            fragmentCode = fShaderStream.str();
+            vrtx_code = vShaderStream.str();
+            frag_code = fShaderStream.str();
 
             // If a geometry shader is provided, load it
             if (!shader_compile_desc.geom_path.empty()) {
-                gShaderFile.open(shader_compile_desc.geom_path);
-                std::stringstream gShaderStream;
-                gShaderStream << gShaderFile.rdbuf();
-                gShaderFile.close();
-                geometryCode = gShaderStream.str();
+                g_shader_file.open(shader_compile_desc.geom_path);
+                std::stringstream g_shader_stream;
+                g_shader_stream << g_shader_file.rdbuf();
+                g_shader_file.close();
+                geom_code = g_shader_stream.str();
             }
         }
         catch (const std::ifstream::failure& e) {
@@ -126,40 +126,40 @@ public:
 
         // Compile shaders
         unsigned int vertex, fragment, geometry = 0;
-        const char* vShaderCode = vertexCode.c_str();
-        const char* fShaderCode = fragmentCode.c_str();
-        const char* gShaderCode = geometryCode.c_str();
+        const char* PTR_V_SHADER_CODE = vrtx_code.c_str();
+        const char* PTR_F_SHADER_CODE = frag_code.c_str();
+        const char* PTR_G_SHADER_CODE = geom_code.c_str();
 
         // Vertex shader
         vertex = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertex, 1, &vShaderCode, NULL);
+        glShaderSource(vertex, 1, &PTR_V_SHADER_CODE, NULL);
         glCompileShader(vertex);
         checkCompileErrors(shader_compile_desc, vertex, "VERTEX");
 
         // Fragment shader
         fragment = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragment, 1, &fShaderCode, NULL);
+        glShaderSource(fragment, 1, &PTR_F_SHADER_CODE, NULL);
         glCompileShader(fragment);
         checkCompileErrors(shader_compile_desc, fragment, "FRAGMENT");
 
         // If a geometry shader is provided, compile it
         if (!shader_compile_desc.geom_path.empty()) {
             geometry = glCreateShader(GL_GEOMETRY_SHADER);
-            glShaderSource(geometry, 1, &gShaderCode, NULL);
+            glShaderSource(geometry, 1, &PTR_G_SHADER_CODE, NULL);
             glCompileShader(geometry);
             checkCompileErrors(shader_compile_desc, geometry, "GEOMETRY");
         }
 
         // Create the shader program
-        ID = glCreateProgram();
-        glAttachShader(ID, vertex);
-        glAttachShader(ID, fragment);
+        id = glCreateProgram();
+        glAttachShader(id, vertex);
+        glAttachShader(id, fragment);
         if (!shader_compile_desc.geom_path.empty()) {
-            glAttachShader(ID, geometry);
+            glAttachShader(id, geometry);
         }
 
-        glLinkProgram(ID);
-        checkCompileErrors(shader_compile_desc, ID, "PROGRAM");
+        glLinkProgram(id);
+        checkCompileErrors(shader_compile_desc, id, "PROGRAM");
 
         // Delete shaders after they are linked
         glDeleteShader(vertex);
@@ -173,49 +173,49 @@ public:
     // ------------------------------------------------------------------------
     void use() 
     { 
-        glUseProgram(ID); 
+        glUseProgram(id); 
     }
     // utility uniform functions
     // ------------------------------------------------------------------------
     void setBool(const std::string &name, bool value) const
     {         
-        glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value); 
+        glUniform1i(glGetUniformLocation(id, name.c_str()), (int)value); 
     }
     // ------------------------------------------------------------------------
     void setInt(const std::string &name, int value) const
     { 
-        glUniform1i(glGetUniformLocation(ID, name.c_str()), value); 
+        glUniform1i(glGetUniformLocation(id, name.c_str()), value); 
     }
     // ------------------------------------------------------------------------
     void setFloat(const std::string &name, float value) const
     { 
-        glUniform1f(glGetUniformLocation(ID, name.c_str()), value); 
+        glUniform1f(glGetUniformLocation(id, name.c_str()), value); 
     }
     // ------------------------------------------------------------------------
     void setMat4(const std::string& name, const Mat4& value) const
     {
-        GLuint loc = glGetUniformLocation(ID, name.c_str());
+        GLuint loc = glGetUniformLocation(id, name.c_str());
         glUniformMatrix4fv(loc, 1, GL_TRUE, &value.m[0][0]);
     }
     // ------------------------------------------------------------------------
     void setVec2(const std::string& name, const Vec2& value) const
     {
-        glUniform2f(glGetUniformLocation(ID, name.c_str()), value.x, value.y);
+        glUniform2f(glGetUniformLocation(id, name.c_str()), value.x, value.y);
     }
     // ------------------------------------------------------------------------
     void setVec2(const std::string& name, const float& vx, const float& vy) const
     {
-        glUniform2f(glGetUniformLocation(ID, name.c_str()), vx, vy);
+        glUniform2f(glGetUniformLocation(id, name.c_str()), vx, vy);
     }
     // ------------------------------------------------------------------------
     void setVec3(const std::string& name, const Vec3& value) const
     {
-        glUniform3f(glGetUniformLocation(ID, name.c_str()), value.x, value.y, value.z);
+        glUniform3f(glGetUniformLocation(id, name.c_str()), value.x, value.y, value.z);
     }
     // ------------------------------------------------------------------------
     void setVec3(const std::string& name, const float& vx, const float& vy, const float& vz) const
     {
-        glUniform3f(glGetUniformLocation(ID, name.c_str()), vx, vy, vz);
+        glUniform3f(glGetUniformLocation(id, name.c_str()), vx, vy, vz);
     }
 
 private:

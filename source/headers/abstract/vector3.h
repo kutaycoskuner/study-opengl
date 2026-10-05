@@ -120,7 +120,7 @@ struct Vec3
 	// length
 	float length() const
 	{
-		float result = sqrtf(lengthSquared());
+		float result = sqrtf(x * x + y * y + z * z);	
 		return result;
 	}
 

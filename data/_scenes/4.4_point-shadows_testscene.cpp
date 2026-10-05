@@ -261,7 +261,7 @@ void PointShadowsTestScene::update() {
 	// move lights radial
 	// ----------------------------------------------------------------
 	float distance_multiplier = 3.0f;
-	const float pi = 3.141592f;
+	const float PI = 3.141592f;
 
 	//Vec3 origin = (0.0f, 0.0f, 0.0f);
 	//directional_lights[0].direction = (origin - directional_lights[0].position);
@@ -270,7 +270,7 @@ void PointShadowsTestScene::update() {
 	{
 		// change light position
 		point_lights[0].position.x 
-			= distance_multiplier * cos(scene_state.time + 2 * pi / point_lights.size() * ii);
+			= distance_multiplier * cos(scene_state.time + 2 * PI / point_lights.size() * ii);
 		point_lights[0].position.y
 			= 4.0f * sinf(scene_state.time);
 		//point_lights[0].position.z

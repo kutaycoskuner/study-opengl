@@ -78,8 +78,8 @@ static void directionToYawPitch(const Vec3& direction, float& yaw_rad, float& pi
 	yaw_rad = std::atan2(direction.x, -direction.z);
 
 	// Calculate pitch (up/down rotation)
-	float lengthXZ = std::sqrt(direction.x * direction.x + direction.z * direction.z);
-	pitch_rad = std::atan2(direction.y, lengthXZ);
+	float length_xz = std::sqrt(direction.x * direction.x + direction.z * direction.z);
+	pitch_rad = std::atan2(direction.y, length_xz);
 
 	// direction.y		= sin(pitch_rad) =>
 	// acos(direction.y)	= pitch_rad
@@ -150,10 +150,10 @@ void Camera::rotate(float x_offset, float y_offset)
 	yaw_rad		-= x_offset;
 	pitch_rad	-= y_offset;
 
-	// Clamp pitch to avoid gimbal lock
-    const float limit_rad = math_utils::toRadian(89.0f);  // just under 90°
-    if (pitch_rad > limit_rad) pitch_rad = limit_rad;
-    if (pitch_rad < -limit_rad) pitch_rad = -limit_rad;
+	// // Clamp pitch to avoid gimbal lock
+    // const float LIMIT_RAD = math_utils::toRadian(89.0f);  // just under 90ï¿½
+    // if (pitch_rad > LIMIT_RAD) pitch_rad = LIMIT_RAD;
+    // if (pitch_rad < -LIMIT_RAD) pitch_rad = -LIMIT_RAD;
 }
 
 
@@ -164,14 +164,15 @@ Vec3 Camera::getDirection() const
 
 Vec3 Camera::getRight(const Vec3& world_up) const
 {
-		Vec3 forward = getDirection();
-	Vec3 right = math_utils::cross3d(forward, world_up);
+	return math_utils::cross3d(getDirection(), world_up).normalized();
+	// 	Vec3 forward = getDirection();
+	// Vec3 right = math_utils::cross3d(forward, world_up);
 
-	// If forward and world_up are nearly parallel, use fallback axis (e.g., (0, 0, 1))
-	if (right.lengthSquared() < 1e-6f) { // 0.000001f -> approximation to 0 limit due to float precision
-		right = math_utils::cross3d(forward, Vec3(0, 0, 1));
-	}
-	return right.normalized();
+	// // If forward and world_up are nearly parallel, use fallback axis (e.g., (0, 0, 1))
+	// if (right.lengthSquared() < 1e-6f) { // 0.000001f -> approximation to 0 limit due to float precision
+	// 	right = math_utils::cross3d(forward, Vec3(0, 0, 1));
+	// }
+	// return right.normalized();
 }
 
 Vec3 Camera::getUp(const Vec3& world_up) const
