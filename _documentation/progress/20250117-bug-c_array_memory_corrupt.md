@@ -1,1 +1,0 @@
-- map memory corrup problemi c array
