@@ -9,6 +9,7 @@ _temp.md
 artifacts/
 bin/
 build/
+build-clang/
 _documentation/prompts/
 _temp/
 scripts/_input/
